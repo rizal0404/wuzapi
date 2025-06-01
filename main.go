@@ -202,6 +202,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	renderPort := os.Getenv("PORT")
+    listenPort := *port // Gunakan nilai dari flag sebagai default
+
+    if renderPort != "" {
+        listenPort = renderPort // Jika PORT dari env var ada, gunakan itu
+        log.Info().Str("port_from_env", renderPort).Msg("Using port from PORT environment variable")
+    }
+
 	s := &server{
 		router: mux.NewRouter(),
 		db:     db,
@@ -212,7 +220,7 @@ func main() {
 	s.connectOnStartup()
 
 	srv := &http.Server{
-		Addr:              *address + ":" + *port,
+		Addr:              *address + ":" + listenPort,
 		Handler:           s.router,
 		ReadHeaderTimeout: 20 * time.Second,
 		ReadTimeout:       60 * time.Second,
@@ -267,7 +275,7 @@ func main() {
 			}
 		}
 	}()
-	log.Info().Str("address", *address).Str("port", *port).Msg("Server started. Waiting for connections...")
+	log.Info().Str("address", *address).Str("port", listenPort).Msg("Server started. Waiting for connections...")
 	select {}
 
 }
